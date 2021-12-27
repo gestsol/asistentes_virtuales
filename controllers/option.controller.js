@@ -33,6 +33,16 @@ const associateMultipleChildsToParent = async (parentOpt, childrenIds) => {
   return allChildren;
 };
 
+const removeParentOpt = async (parentOptId) => {
+  const children = await Option.find({ parentOptId });
+  const promises = children.map(child => {
+    child.parentOpt = undefined;
+    return child.save();
+  });
+
+  return Promise.all(promises);
+}
+
 const createOption = async (req, res, next) => {
   try {
     let parentOpt;
@@ -97,12 +107,13 @@ const updateOption = async (req, res, next) => {
     }
 
     if ((!doc.options && !doc.action || doc.options) && body.options) {
-      let docOptions;
+      // si el documento que se quiere actualizar tiene options, es decir, si es un parentOpt
+      // de otras opciones, eliminar esa relacion de las opciones hijas.
       if (doc.options) {
-        docOptions = doc.options.map((opt) => opt._id.toString());
+        await removeParentOpt(doc._id);
       }
       
-      body.options = docOptions ? _.uniq([...docOptions, ...body.options]) : _.uniq(body.options);
+      body.options = _.uniq(body.options);
       const childrenOptions = await associateMultipleChildsToParent(doc._id, body.options);
       doc.options = childrenOptions;
       await doc.populate('options');
