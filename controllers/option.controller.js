@@ -1,6 +1,6 @@
 /* eslint-disable no-prototype-builtins */
+const { Types } = require("mongoose");
 const _ = require("lodash");
-const { options } = require("../app");
 const Option = require("../models/option.model");
 
 const _validateParentOpt = async (parentOptStr) => {
@@ -18,30 +18,45 @@ const _validateParentOpt = async (parentOptStr) => {
  * @param  {ObjectId} parentOptId id de la opcion padre
  * @param  {array<ObjectId>} childrenIds ids de opciones hijas que se quieren asociar al padre
  */
-const associateMultipleChildsToParent = async (parentOpt, childrenIds) => {
+const _associateMultipleChildsToParent = async (parentOpt, childrenIds) => {
   // encontrar los childrenIds validos y que sean unicos
-  const validChildrenIds = await Option.find({ _id: { $in: childrenIds } }).then(results => {
-    return _.uniq(results.map(r => r._id.toString()));
+  const validChildrenIds = await Option.find({
+    _id: { $in: childrenIds },
+  }).then((results) => {
+    return _.uniq(results.map((r) => r._id.toString()));
   });
 
-  await Option.updateMany({_id: { $in: validChildrenIds }}, { parentOpt: parentOpt._id });
+  await Option.updateMany(
+    { _id: { $in: validChildrenIds } },
+    { parentOpt: parentOpt._id }
+  );
 
-  const parentOptions = parentOpt.options && parentOpt.options.map(childOpt => childOpt.toString());
+  const parentOptions =
+    parentOpt.options &&
+    parentOpt.options.map((childOpt) => childOpt.toString());
 
-  const allChildren = parentOptions ? _.uniq([...parentOptions, ...validChildrenIds]) : validChildrenIds;
+  const allChildren = parentOptions
+    ? _.uniq([...parentOptions, ...validChildrenIds])
+    : validChildrenIds;
 
   return allChildren;
 };
 
-const removeParentOpt = async (parentOptId) => {
+const _insertChildrenAsObjects = async (children) => {
+  return Option.insertMany(children).then((inserted) =>
+    inserted.map((child) => child._id)
+  );
+};
+
+const _removeParentOpt = async (parentOptId) => {
   const children = await Option.find({ parentOptId });
-  const promises = children.map(child => {
+  const promises = children.map((child) => {
     child.parentOpt = undefined;
     return child.save();
   });
 
   return Promise.all(promises);
-}
+};
 
 const createOption = async (req, res, next) => {
   try {
@@ -51,14 +66,31 @@ const createOption = async (req, res, next) => {
       parentOpt = await _validateParentOpt(req.body.parentOpt);
     }
 
-    const option = await Option.create(req.body);
+    const { options, ...body } = req.body;
 
-    if (req.body.options?.length) {
-      const optionChildren = await associateMultipleChildsToParent(
-        option,
-        req.body.options
-      );
-      option.options = optionChildren;
+    const option = await Option.create(body);
+
+    // Si las opciones del body no son ids de mongo, quiere decir que son
+    // objetos de tipo options, por lo tanto, se deben crear y luego asociar.
+    if (options?.length) {
+      const optionsAreObjectIds = Types.ObjectId.isValid(options[0]);
+      if (optionsAreObjectIds === false) {
+        const childrenIds = await _insertChildrenAsObjects(options);
+        await _associateMultipleChildsToParent(
+          option._id,
+          childrenIds
+        );
+        option.options = childrenIds;
+      } 
+      
+      if (optionsAreObjectIds === true) {
+        const optionChildren = await _associateMultipleChildsToParent(
+          option,
+          options
+        );
+        option.options = optionChildren;
+      }
+
       await option.save();
       await option.populate("options");
     }
@@ -74,15 +106,11 @@ const createOption = async (req, res, next) => {
     });
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.log(err);
-    res.status(400).json({
-      status: "fail",
-      error: err.message,
-    });
+    return next(err);
   }
 };
 
-const removeChildReference = (child) =>
+const _removeChildReference = (child) =>
   Option.updateOne(
     { _id: child.parentOpt },
     {
@@ -106,17 +134,31 @@ const updateOption = async (req, res, next) => {
       parentOpt = await _validateParentOpt(body.parentOpt);
     }
 
-    if ((!doc.options && !doc.action || doc.options) && body.options) {
+    if (doc.action && body.options) {
+      doc.action = undefined;
+    }
+
+    // Manejar el caso de actualizacion del campo options.
+    if (((!doc.options && !doc.action) || doc.options) && body.options) {
       // si el documento que se quiere actualizar tiene options, es decir, si es un parentOpt
       // de otras opciones, eliminar esa relacion de las opciones hijas.
       if (doc.options) {
-        await removeParentOpt(doc._id);
+        await _removeParentOpt(doc._id);
       }
-      
+
+      // Si las opciones del body no son ids de mongo, quiere decir que son
+      // objetos de tipo options, por lo tanto, se deben crear y luego asociar.
+      if (Types.ObjectId.isValid(body.options[0]) === false) {
+        body.options = await _insertChildrenAsObjects(body.options);
+      }
+
       body.options = _.uniq(body.options);
-      const childrenOptions = await associateMultipleChildsToParent(doc._id, body.options);
+      const childrenOptions = await _associateMultipleChildsToParent(
+        doc._id,
+        body.options
+      );
       doc.options = childrenOptions;
-      await doc.populate('options');
+      await doc.populate("options");
     }
 
     Object.keys(body).forEach((key) => {
@@ -136,7 +178,7 @@ const updateOption = async (req, res, next) => {
     // Si se recibe parentOpt en el body como un falsy value, quiere decir que se quiere eliminar la
     // la relacion.
     if (body.hasOwnProperty("parentOpt") && !body.parentOpt) {
-      await removeChildReference(doc);
+      await _removeChildReference(doc);
       doc.parentOpt = undefined;
     }
 
@@ -163,7 +205,10 @@ const updateOption = async (req, res, next) => {
 
 const getOptions = async (req, res, next) => {
   try {
-    let filter = req.query;
+    let filter = {
+      ...req.query,
+      parentOpt: undefined
+    };
 
     if (filter.optionDescription) {
       filter = {
@@ -221,7 +266,7 @@ const deleteOption = async (req, res, next) => {
     }
 
     if (doc.parentOpt) {
-      await removeChildReference(doc);
+      await _removeChildReference(doc);
     }
 
     res.status(204).json({
