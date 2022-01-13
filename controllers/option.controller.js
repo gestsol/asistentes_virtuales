@@ -42,8 +42,12 @@ const _associateMultipleChildsToParent = async (parentOpt, childrenIds) => {
   return allChildren;
 };
 
-const _insertChildrenAsObjects = async (children) => {
-  return Option.insertMany(children).then((inserted) =>
+const _insertChildrenAsObjects = async (children, virtualAssistantID) => {
+  const childrenWithAssistantID = children.map(child => {
+    child.virtualAssistant = virtualAssistantID;
+    return child;
+  })
+  return Option.insertMany(childrenWithAssistantID).then((inserted) =>
     inserted.map((child) => child._id)
   );
 };
@@ -66,16 +70,18 @@ const createOption = async (req, res, next) => {
       parentOpt = await _validateParentOpt(req.body.parentOpt);
     }
 
-    const { options, ...body } = req.body;
+    const { options, virtualAssistant, ...body } = req.body;
+    const virtualAssistantID = req.params.virtualAssistantId;
 
-    const option = await Option.create(body);
+    const option = await Option.create({virtualAssistant: virtualAssistantID, ...body});
 
     // Si las opciones del body no son ids de mongo, quiere decir que son
     // objetos de tipo options, por lo tanto, se deben crear y luego asociar.
     if (options?.length) {
       const optionsAreObjectIds = Types.ObjectId.isValid(options[0]);
       if (optionsAreObjectIds === false) {
-        const childrenIds = await _insertChildrenAsObjects(options);
+        
+        const childrenIds = await _insertChildrenAsObjects(options, virtualAssistantID);
         await _associateMultipleChildsToParent(
           option._id,
           childrenIds
@@ -149,7 +155,7 @@ const updateOption = async (req, res, next) => {
       // Si las opciones del body no son ids de mongo, quiere decir que son
       // objetos de tipo options, por lo tanto, se deben crear y luego asociar.
       if (Types.ObjectId.isValid(body.options[0]) === false) {
-        body.options = await _insertChildrenAsObjects(body.options);
+        body.options = await _insertChildrenAsObjects(body.options, doc.virtualAssistant);
       }
 
       body.options = _.uniq(body.options);
@@ -206,15 +212,16 @@ const updateOption = async (req, res, next) => {
 const getOptions = async (req, res, next) => {
   try {
     let filter = {
+      virtualAssistant: req.params.virtualAssistantId,
       ...req.query,
-      parentOpt: undefined
     };
 
     if (filter.optionDescription) {
-      filter = {
-        ...filter,
-        optionDescription: new RegExp(`${filter.optionDescription}`, "gi"),
-      };
+      filter.optionDescription = new RegExp(`${filter.optionDescription}`, "gi")
+    }
+
+    if (!filter.optionNumber) {
+      filter.parentOpt = undefined;
     }
 
     const results = await Option.find(filter);
@@ -233,8 +240,9 @@ const getOptions = async (req, res, next) => {
 };
 
 const getOptionById = async (req, res, next) => {
+  const { id, virtualAssistantId } = req.params
   try {
-    const option = await Option.findById(req.params.id);
+    const option = await Option.find({_id: id, virtualAssistant: virtualAssistantId });
 
     if (!option) {
       return res.status(404).json({

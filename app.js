@@ -1,13 +1,15 @@
 const express = require("express");
 const cors = require("cors");
 const optionRouter = require("./routes/options.router");
+const virtualAssistantRouter = require("./routes/virtualAssistant.router");
 
 const app = express();
 
 app.use(cors("*"));
 app.use(express.json());
 
-app.use("/api/v1/options", optionRouter);
+app.use("/api/v1/virtual_assistant", virtualAssistantRouter);
+// app.use("/api/v1/options", optionRouter);
 
 app.all("*", (req, res, next) => {
   res.status(404).json({
@@ -19,6 +21,7 @@ app.all("*", (req, res, next) => {
 app.use((err, req, res, next) => {
   // eslint-disable-next-line no-console
   let message = err.message;
+  // Violacion constraint campo unico (el codigo es 11000)
   if (err.code === 11000) {
     const fieldStart = err.message.substring(
       err.message.indexOf("index: ") + 7

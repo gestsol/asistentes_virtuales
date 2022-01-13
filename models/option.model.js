@@ -1,5 +1,5 @@
 /* eslint-disable new-cap */
-const { Schema, model } = require('mongoose');
+const { Schema, model } = require("mongoose");
 
 /**
  *
@@ -30,12 +30,11 @@ function optionsFieldValidator(options) {
 const optionSchema = new Schema({
   optionNumber: {
     type: Number,
-    required: [true, 'optionNumber field is required'],
-    unique: true,
+    required: [true, "optionNumber field is required"],
   },
   optionDescription: {
     type: String,
-    required: [true, 'optionDescription field is required'],
+    required: [true, "optionDescription field is required"],
   },
   action: {
     type: String,
@@ -48,7 +47,7 @@ const optionSchema = new Schema({
     type: [
       {
         type: Schema.ObjectId,
-        ref: 'Option',
+        ref: "Option",
       },
     ],
     default: undefined,
@@ -59,12 +58,17 @@ const optionSchema = new Schema({
   },
   parentOpt: {
     type: Schema.ObjectId,
-    ref: 'Option',
+    ref: "Option",
     default: undefined,
+  },
+  virtualAssistant: {
+    type: Schema.ObjectId,
+    ref: "virtual_assistant",
+    required: [true, "ID de virtualAssistant es requerido."],
   },
 });
 
-optionSchema.pre('save', function (next) {
+optionSchema.pre("save", function (next) {
   if (this.action) {
     this.options = undefined;
   }
@@ -73,10 +77,12 @@ optionSchema.pre('save', function (next) {
 });
 
 optionSchema.pre(/^find/, function (next) {
-  this.populate('options');
+  this.populate("options");
   next();
 });
 
-const Option = new model('Option', optionSchema);
+optionSchema.index({ virtualAssistant: 1, optionNumber: 1 }, { unique: true });
+
+const Option = new model("Option", optionSchema);
 
 module.exports = Option;

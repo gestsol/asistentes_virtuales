@@ -7,7 +7,7 @@ const {
   getOptionById,
 } = require('../controllers/option.controller');
 
-const optionRouter = Router();
+const optionRouter = Router({ mergeParams: true });
 
 /**
  * Middleware that prevents one document to have action and options fields in the same document
