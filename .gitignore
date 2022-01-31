@@ -1,3 +1,7 @@
-node_modules
+# FOLDERS
+node_modules/
+.vscode/
+
+# FILES
 .env
 todo.txt
