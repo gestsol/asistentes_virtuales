@@ -1,39 +1,39 @@
 /* eslint-disable no-console */
-const mongoose = require('mongoose');
-const dotenv = require('dotenv');
+const mongoose = require('mongoose')
+const dotenv = require('dotenv')
 
-dotenv.config({ path: './.env' });
+dotenv.config({ path: './.env' })
 
-const { DB_URI } = process.env;
+const { DB_URI } = process.env
 
 mongoose
   .connect(DB_URI, {
-    useNewUrlParser: true,
+    useNewUrlParser: true
   })
-  .then(() => console.log('DB connection successful'));
+  .then(() => console.log('DB connection successful'))
 
-const app = require('./app');
+const app = require('./app')
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3000
 
 const server = app.listen(port, () => {
-  console.log(`app running on port ${port}`);
-});
+  console.log(`app running on port ${port}`)
+})
 
-process.on('unhandledRejection', (err) => {
-  console.log('UNHANDLED REJECTION. Shutting down...');
-  console.log(err);
+process.on('unhandledRejection', err => {
+  console.log('UNHANDLED REJECTION. Shutting down...')
+  console.log(err)
   server.close(() => {
-    process.exit(1);
-  });
-});
+    process.exit(1)
+  })
+})
 
 process.on('SIGTERM', () => {
-  console.log('SIGTERM RECEIVED. Shutting down gracefully');
+  console.log('SIGTERM RECEIVED. Shutting down gracefully')
   server.close(() => {
-    console.log('Process terminaed.');
-  });
-});
+    console.log('Process terminaed.')
+  })
+})
 
 // Option.find({}).then((r) => {
 //   console.log(r);

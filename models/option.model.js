@@ -1,5 +1,5 @@
 /* eslint-disable new-cap */
-const { Schema, model } = require("mongoose");
+const { Schema, model } = require('mongoose')
 
 /**
  *
@@ -8,10 +8,10 @@ const { Schema, model } = require("mongoose");
  */
 function actionFieldValidator(value) {
   if (value && this.options) {
-    return false;
+    return false
   }
 
-  return true;
+  return true
 }
 
 /**
@@ -21,68 +21,62 @@ function actionFieldValidator(value) {
  */
 function optionsFieldValidator(options) {
   if (options && options.length && this.action) {
-    return false;
+    return false
   }
 
-  return true;
+  return true
 }
 
 const optionSchema = new Schema({
   optionNumber: {
     type: Number,
-    required: [true, "optionNumber field is required"],
+    required: [true, 'optionNumber field is required']
   },
   optionDescription: {
     type: String,
-    required: [true, "optionDescription field is required"],
+    required: [true, 'optionDescription field is required']
   },
   action: {
     type: String,
-    validate: [
-      actionFieldValidator,
-      `You must define the field 'action' or 'options', but not both`,
-    ],
+    validate: [actionFieldValidator, `You must define the field 'action' or 'options', but not both`]
   },
   options: {
     type: [
       {
         type: Schema.ObjectId,
-        ref: "Option",
-      },
+        ref: 'Option'
+      }
     ],
     default: undefined,
-    validate: [
-      optionsFieldValidator,
-      `You must define the field 'action' or 'options', but not both`,
-    ],
+    validate: [optionsFieldValidator, `You must define the field 'action' or 'options', but not both`]
   },
   parentOpt: {
     type: Schema.ObjectId,
-    ref: "Option",
-    default: undefined,
+    ref: 'Option',
+    default: undefined
   },
   virtualAssistant: {
     type: Schema.ObjectId,
-    ref: "virtual_assistant",
-    required: [true, "ID de virtualAssistant es requerido."],
-  },
-});
+    ref: 'virtual_assistant',
+    required: [true, 'ID de virtualAssistant es requerido.']
+  }
+})
 
-optionSchema.pre("save", function (next) {
+optionSchema.pre('save', function (next) {
   if (this.action) {
-    this.options = undefined;
+    this.options = undefined
   }
 
-  next();
-});
+  next()
+})
 
 optionSchema.pre(/^find/, function (next) {
-  this.populate("options");
-  next();
-});
+  this.populate('options')
+  next()
+})
 
-optionSchema.index({ virtualAssistant: 1, optionNumber: 1 }, { unique: true });
+optionSchema.index({ virtualAssistant: 1, optionNumber: 1 }, { unique: true })
 
-const Option = new model("Option", optionSchema);
+const Option = new model('Option', optionSchema)
 
-module.exports = Option;
+module.exports = Option
