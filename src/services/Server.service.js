@@ -1,7 +1,7 @@
 const express = require('express')
 const cors = require('cors')
-const optionRouter = require('./routes/options.router')
-const virtualAssistantRouter = require('./routes/virtualAssistant.router')
+const optionRouter = require('../routes/options.router')
+const virtualAssistantRouter = require('../routes/virtualAssistant.router')
 
 const app = express()
 

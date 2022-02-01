@@ -12,7 +12,7 @@ mongoose
   })
   .then(() => console.log('DB connection successful'))
 
-const app = require('./app')
+const app = require('./services/Server.service')
 
 const port = process.env.PORT || 3000
 
