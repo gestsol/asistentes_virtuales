@@ -7,12 +7,18 @@ const {
   getOptionById
 } = require('../controllers/option.controller')
 
+const router = Router({ mergeParams: true })
 const optionRouter = Router({ mergeParams: true })
+
+/**
+ * Middleware to concatenate friendly route
+ */
+router.use('/:virtualAssistantId/options', optionRouter)
 
 /**
  * Middleware that prevents one document to have action and options fields in the same document
  */
-optionRouter.use((req, res, next) => {
+optionRouter.use((req, _, next) => {
   let allowBody = true
 
   if (req.method === 'POST' || req.method === 'PATCH') {
@@ -27,7 +33,6 @@ optionRouter.use((req, res, next) => {
 })
 
 optionRouter.route('/').get(getOptions).post(createOption)
+optionRouter.route('/:id').get(getOptionById).patch(updateOption).delete(deleteOption)
 
-optionRouter.route('/:id').patch(updateOption).delete(deleteOption).get(getOptionById)
-
-module.exports = optionRouter
+module.exports = { optionRoutes: router }
