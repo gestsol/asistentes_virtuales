@@ -5,6 +5,7 @@ const createVirtualAssistant = async (req, res, next) => {
     const virtualAssistant = await VirtualAssistant.create(req.body)
 
     res.status(201).json({
+      status: 'success',
       virtualAssistant
     })
   } catch (err) {
@@ -12,11 +13,12 @@ const createVirtualAssistant = async (req, res, next) => {
   }
 }
 
-const getVirtualAssistants = async (req, res, next) => {
+const getVirtualAssistants = async (_, res, next) => {
   try {
     const results = await VirtualAssistant.find()
 
     res.status(200).json({
+      status: 'success',
       results
     })
   } catch (err) {
@@ -33,6 +35,7 @@ const getVirtualAssistantById = async (req, res, next) => {
     }
 
     res.status(200).json({
+      status: 'success',
       virtualAssistant
     })
   } catch (err) {

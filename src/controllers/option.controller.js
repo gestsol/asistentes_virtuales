@@ -53,6 +53,17 @@ const _removeParentOpt = async parentOptId => {
   return Promise.all(promises)
 }
 
+const _removeChildReference = child => {
+  return Option.updateOne(
+    { _id: child.parentOpt },
+    {
+      $pullAll: {
+        options: [child._id]
+      }
+    }
+  )
+}
+
 const createOption = async (req, res, next) => {
   try {
     let parentOpt
@@ -96,19 +107,9 @@ const createOption = async (req, res, next) => {
     })
   } catch (err) {
     // eslint-disable-next-line no-console
-    return next(err)
+    next(err)
   }
 }
-
-const _removeChildReference = child =>
-  Option.updateOne(
-    { _id: child.parentOpt },
-    {
-      $pullAll: {
-        options: [child._id]
-      }
-    }
-  )
 
 const updateOption = async (req, res, next) => {
   try {
@@ -182,11 +183,7 @@ const updateOption = async (req, res, next) => {
     })
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.log(err)
-    res.status(400).json({
-      status: 'fail',
-      error: err.message
-    })
+    next(err)
   }
 }
 
@@ -208,15 +205,12 @@ const getOptions = async (req, res, next) => {
     const results = await Option.find(filter)
 
     res.status(200).json({
+      status: 'success',
       results
     })
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.log(err)
-    res.status(400).json({
-      status: 'fail',
-      error: err.message
-    })
+    next(err)
   }
 }
 
@@ -238,11 +232,7 @@ const getOptionById = async (req, res, next) => {
     })
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.log(err)
-    res.status(400).json({
-      status: 'fail',
-      error: err.message
-    })
+    next(err)
   }
 }
 
@@ -258,17 +248,13 @@ const deleteOption = async (req, res, next) => {
       await _removeChildReference(doc)
     }
 
-    res.status(204).json({
+    res.status(200).json({
       status: 'success',
       data: null
     })
   } catch (err) {
     // eslint-disable-next-line no-console
-    console.log(err)
-    res.status(400).json({
-      status: 'fail',
-      error: err.message
-    })
+    next(err)
   }
 }
 

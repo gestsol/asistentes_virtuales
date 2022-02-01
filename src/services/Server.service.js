@@ -10,19 +10,21 @@ app.use(express.json())
 
 app.use(BASE_URL + '/virtual_assistant', routes)
 
-app.all('*', (req, res, next) => {
+app.all('*', (req, res, _) => {
   res.status(404).json({
     status: 'Fail',
     error: `Can't find ${req.originalUrl} on this server!`
   })
 })
 
-app.use((err, req, res, next) => {
+app.use((err, _, res) => {
+  console.log(err)
   // eslint-disable-next-line no-console
-  let message = err.message
+  let { code, message } = err
+
   // Violacion constraint campo unico (el codigo es 11000)
-  if (err.code === 11000) {
-    const fieldStart = err.message.substring(err.message.indexOf('index: ') + 7)
+  if (code === 11000) {
+    const fieldStart = message.substring(message.indexOf('index: ') + 7)
     const fieldIndexEnd = fieldStart.indexOf('_')
     const actualField = fieldStart.substring(0, fieldIndexEnd)
     const value = fieldStart
@@ -33,7 +35,6 @@ app.use((err, req, res, next) => {
     message = `El campo ${actualField} con valor = ${value} ya existe. (Este campo es único)`
   }
 
-  console.log(err.message)
   res.status(400).json({
     status: 'fail',
     error: message
