@@ -1,53 +1,37 @@
 const mongoose = require('mongoose')
 const dotenv = require('dotenv')
+const { Server } = require('./services/Server.service')
 
 dotenv.config({ path: './.env' })
 
-const { DB_URI } = process.env
+const { DB_URI, PORT } = process.env
 
 mongoose
   .connect(DB_URI, {
     useNewUrlParser: true
   })
-  .then(() => console.log('DB connection successful'))
+  .then(() => {
+    console.log('DB -> connection successful')
+    const port = PORT || 3000
 
-const app = require('./services/Server.service')
-
-const port = process.env.PORT || 3000
-
-const server = app.listen(port, () => {
-  console.log(`app running on port ${port}`)
-})
+    Server.listen(port, () => {
+      console.log(`API -> listening on port ${port}`)
+    })
+  })
 
 process.on('unhandledRejection', err => {
-  console.log('UNHANDLED REJECTION. Shutting down...')
-  console.log(err)
-  server.close(() => {
+  console.error('UNHANDLED REJECTION -> Shutting down...')
+  console.error(err)
+
+  Server.close(() => {
     process.exit(1)
   })
 })
 
 process.on('SIGTERM', () => {
-  console.log('SIGTERM RECEIVED. Shutting down gracefully')
+  console.error('SIGTERM RECEIVED -> Shutting down gracefully')
+
   server.close(() => {
-    console.log('Process terminaed.')
+    console.log('API -> Process terminaed.')
   })
 })
-
-// Option.find({}).then((r) => {
-//   console.log(r);
-// });
-
-// Option.create({
-//   optionNumber: 1,
-//   optionDescription: 'Consultar Saldo',
-//   options: ['61c0c4c523260490710f51e5'],
-// }).then((result) => {
-//   console.log(result);
-// });
-
-// Option.find({ optionNumber: 1 })
-//   .populate('options')
-//   .then((r) => {
-//     console.log(r[0].options);
-//   });

@@ -17,4 +17,4 @@ app.use(BASE_URL + '/virtual_assistant', routes)
 app.use(notFound)
 app.use(errorHandler)
 
-module.exports = app
+module.exports = { Server: app }
