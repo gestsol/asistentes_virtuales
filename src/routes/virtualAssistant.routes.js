@@ -2,12 +2,13 @@ const { Router } = require('express')
 const {
   getVirtualAssistants,
   createVirtualAssistant,
-  getVirtualAssistantById
+  getVirtualAssistantById,
+  updateVirtualAssistant
 } = require('../controllers/virtualAssistant.controller')
 
 const router = Router()
 
 router.route('/').get(getVirtualAssistants).post(createVirtualAssistant)
-router.route('/:id').get(getVirtualAssistantById)
+router.route('/:id').get(getVirtualAssistantById).patch(updateVirtualAssistant)
 
 module.exports = { virtualAssistantRoutes: router }

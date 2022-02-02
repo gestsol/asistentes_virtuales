@@ -32,6 +32,4 @@ const virtualAssistantSchema = new Schema({
   }
 })
 
-const VirtualAssistant = new model('virtual_assistant', virtualAssistantSchema)
-
-module.exports = VirtualAssistant
+module.exports.VirtualAssistant = new model('virtual_assistant', virtualAssistantSchema)

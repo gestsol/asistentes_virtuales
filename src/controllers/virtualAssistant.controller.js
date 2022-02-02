@@ -1,4 +1,4 @@
-const VirtualAssistant = require('../models/assistant.model')
+const { VirtualAssistant } = require('../models/assistant.model')
 
 const createVirtualAssistant = async (req, res, next) => {
   try {
@@ -43,8 +43,32 @@ const getVirtualAssistantById = async (req, res, next) => {
   }
 }
 
+const updateVirtualAssistant = async (req, res, next) => {
+  const body = JSON.stringify(req.body) === '{}' ? null : req.body
+  const assistantId = req.params.id
+
+  if (!body) {
+    return next(new Error('body is required'))
+  }
+
+  try {
+    const virtualAssistant = await VirtualAssistant.findByIdAndUpdate(assistantId, body, { new: true })
+
+    if (!virtualAssistant) {
+      return next(new Error(`Assistant with id ${assistantId} does not exist`))
+    }
+    res.status(200).json({
+      status: 'success',
+      virtualAssistant
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
 module.exports = {
   createVirtualAssistant,
   getVirtualAssistants,
-  getVirtualAssistantById
+  getVirtualAssistantById,
+  updateVirtualAssistant
 }
