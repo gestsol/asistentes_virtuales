@@ -1,4 +1,3 @@
-/* eslint-disable new-cap */
 const { Schema, model } = require('mongoose')
 
 /**
@@ -38,7 +37,7 @@ const optionSchema = new Schema({
   },
   action: {
     type: String,
-    validate: [actionFieldValidator, `You must define the field 'action' or 'options', but not both`]
+    validate: [actionFieldValidator, "You must define the field 'action' or 'options', but not both"]
   },
   options: {
     type: [
@@ -48,7 +47,7 @@ const optionSchema = new Schema({
       }
     ],
     default: undefined,
-    validate: [optionsFieldValidator, `You must define the field 'action' or 'options', but not both`]
+    validate: [optionsFieldValidator, "You must define the field 'action' or 'options', but not both"]
   },
   parentOpt: {
     type: Schema.ObjectId,

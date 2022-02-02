@@ -5,3 +5,4 @@ node_modules/
 # FILES
 .env
 todo.txt
+.eslintcache

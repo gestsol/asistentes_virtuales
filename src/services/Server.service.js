@@ -10,7 +10,7 @@ app.use(express.json())
 
 app.use(BASE_URL + '/virtual_assistant', routes)
 
-app.all('*', (req, res, _) => {
+app.all('*', (req, res) => {
   res.status(404).json({
     status: 'Fail',
     error: `Can't find ${req.originalUrl} on this server!`
@@ -19,7 +19,7 @@ app.all('*', (req, res, _) => {
 
 app.use((err, _, res) => {
   console.log(err)
-  // eslint-disable-next-line no-console
+
   let { code, message } = err
 
   // Violacion constraint campo unico (el codigo es 11000)

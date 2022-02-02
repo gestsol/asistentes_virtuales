@@ -1,0 +1,33 @@
+{
+  "env": {
+    "es2021": true,
+    "node": true
+  },
+  "extends": ["eslint:recommended", "prettier"],
+  "plugins": ["prettier"],
+  "parserOptions": {
+    "ecmaVersion": 11,
+    "sourceType": "module"
+  },
+  "rules": {
+    "indent": ["error", 2, { "SwitchCase": 1 }],
+    "eol-last": ["error", "always"],
+    "require-await": "error",
+    "semi": "off",
+    "prettier/prettier": [
+      "error",
+      {
+        "printWidth": 120,
+        "tabWidth": 2,
+        "useTabs": false,
+        "semi": false,
+        "singleQuote": true,
+        "proseWrap": "always",
+        "arrowParens": "avoid",
+        "bracketSpacing": true,
+        "endOfLine": "lf",
+        "trailingComma": "none"
+      }
+    ]
+  }
+}

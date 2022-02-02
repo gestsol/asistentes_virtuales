@@ -26,7 +26,7 @@ optionRouter.use((req, _, next) => {
   }
 
   if (!allowBody) {
-    return next(new Error(`You can't have both fields 'action' and 'options' in the same document`))
+    return next(new Error("You can't have both fields 'action' and 'options' in the same document"))
   }
 
   next()

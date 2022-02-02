@@ -1,4 +1,3 @@
-/* eslint-disable no-prototype-builtins */
 const { Types } = require('mongoose')
 const _ = require('lodash')
 const Option = require('../models/option.model')
@@ -40,7 +39,10 @@ const _insertChildrenAsObjects = async (children, virtualAssistantID) => {
     child.virtualAssistant = virtualAssistantID
     return child
   })
-  return Option.insertMany(childrenWithAssistantID).then(inserted => inserted.map(child => child._id))
+
+  const inserted = await Option.insertMany(childrenWithAssistantID)
+
+  return inserted.map(child => child._id)
 }
 
 const _removeParentOpt = async parentOptId => {
@@ -72,7 +74,7 @@ const createOption = async (req, res, next) => {
       parentOpt = await _validateParentOpt(req.body.parentOpt)
     }
 
-    const { options, virtualAssistant, ...body } = req.body
+    const { options, ...body } = req.body
     const virtualAssistantID = req.params.virtualAssistantId
 
     const option = await Option.create({ virtualAssistant: virtualAssistantID, ...body })
@@ -106,7 +108,6 @@ const createOption = async (req, res, next) => {
       option
     })
   } catch (err) {
-    // eslint-disable-next-line no-console
     next(err)
   }
 }
@@ -165,7 +166,8 @@ const updateOption = async (req, res, next) => {
 
     // Si se recibe parentOpt en el body como un falsy value, quiere decir que se quiere eliminar la
     // la relacion.
-    if (body.hasOwnProperty('parentOpt') && !body.parentOpt) {
+    const isParentOpt = Object.prototype.hasOwnProperty.call(body, 'parentOpt')
+    if (isParentOpt && !body.parentOpt) {
       await _removeChildReference(doc)
       doc.parentOpt = undefined
     }
@@ -182,14 +184,13 @@ const updateOption = async (req, res, next) => {
       option: doc
     })
   } catch (err) {
-    // eslint-disable-next-line no-console
     next(err)
   }
 }
 
 const getOptions = async (req, res, next) => {
   try {
-    let filter = {
+    const filter = {
       virtualAssistant: req.params.virtualAssistantId,
       ...req.query
     }
@@ -209,7 +210,6 @@ const getOptions = async (req, res, next) => {
       results
     })
   } catch (err) {
-    // eslint-disable-next-line no-console
     next(err)
   }
 }
@@ -231,7 +231,6 @@ const getOptionById = async (req, res, next) => {
       option
     })
   } catch (err) {
-    // eslint-disable-next-line no-console
     next(err)
   }
 }
@@ -253,7 +252,6 @@ const deleteOption = async (req, res, next) => {
       data: null
     })
   } catch (err) {
-    // eslint-disable-next-line no-console
     next(err)
   }
 }
