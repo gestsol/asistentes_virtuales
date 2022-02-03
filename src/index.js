@@ -31,7 +31,7 @@ process.on('unhandledRejection', err => {
 process.on('SIGTERM', () => {
   console.error('SIGTERM RECEIVED -> Shutting down gracefully')
 
-  server.close(() => {
+  Server.close(() => {
     console.log('API -> Process terminaed.')
   })
 })
