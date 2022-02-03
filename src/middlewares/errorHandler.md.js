@@ -1,6 +1,4 @@
 function errorHandler(error, req, res, next) {
-  console.error('ERROR-SERVER ->', error)
-
   if (res.headersSent) {
     console.error('ERROR-HANDLING-EXPRESS ->', error)
     // Error handling is delegated to Express
@@ -22,6 +20,9 @@ function errorHandler(error, req, res, next) {
     req.statusCode = 400
     message = `El campo ${actualField} con valor = ${value} ya existe. (Este campo es único)`
   }
+
+  // Debug error
+  if (!req.statusCode) console.error('ERROR-SERVER ->', error)
 
   // Error handling personalized
   res.status(req.statusCode || 500).json({
