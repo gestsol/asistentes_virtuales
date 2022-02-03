@@ -119,7 +119,8 @@ const updateOption = async (req, res, next) => {
     let parentOpt
 
     if (!doc) {
-      return next(new Error(`Option with id ${req.params.id} does not exist`))
+      req.statusCode = 404
+      throw new Error(`Option with id ${req.params.id} does not exist`)
     }
 
     if (body.parentOpt) {
@@ -220,10 +221,8 @@ const getOptionById = async (req, res, next) => {
     const option = await Option.find({ _id: id, virtualAssistant: virtualAssistantId })
 
     if (!option) {
-      return res.status(404).json({
-        status: 'fail',
-        error: 'No option was found'
-      })
+      req.statusCode = 404
+      throw new Error(`Option with id ${id} does not exist`)
     }
 
     res.status(200).json({
@@ -240,7 +239,8 @@ const deleteOption = async (req, res, next) => {
     const doc = await Option.findByIdAndRemove(req.params.id)
 
     if (!doc) {
-      return next(new Error('No option was found'))
+      req.statusCode = 404
+      throw new Error('No option was found')
     }
 
     if (doc.parentOpt) {
