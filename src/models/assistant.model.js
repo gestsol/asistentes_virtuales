@@ -15,14 +15,19 @@ const virtualAssistantSchema = new Schema({
   phone: {
     type: String,
     validate: {
-      validator: function (value) {
-        return /^[0-9]*$/.test(value)
+      validator: value => {
+        // Validación de teléfono, ejemplo: +56912345678
+        const regex = new RegExp(/^[+0-9]*$/)
+
+        return regex.test(value)
       },
       message: props => `${props.value} no es un número de teléfono válido`
     },
     required: [true, 'El campo <phone> es requerido'],
     unique: true,
-    minlength: [8, 'El campo <phone> debe contener al menos 8 caracteres']
+    // La longitud mínima debe ser de 9 caracteres (el simbolo "+" mas el numero de telefono)
+    minlength: [9, 'El campo <phone> debe contener al menos 8 caracteres'],
+    maxlength: [15, 'El campo <phone> NO debe contener más de 15 caracteres']
   },
   wasi_device_id: {
     type: String
