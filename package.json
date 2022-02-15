@@ -1,12 +1,24 @@
 {
-  "name": "chatbot",
+  "name": "asistentes-virtuales",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "private": true,
+  "license": "UNLICENSED",
+  "author": "WIT",
+  "contributors": [
+    {
+      "name": "Edixon Piña",
+      "email": "edixonalbertto@gmail.com"
+    },
+    {
+      "name": "Leonardo Ramos",
+      "email": "leorrc96@gmail.com"
+    }
+  ],
   "scripts": {
     "lintfix": "eslint src --fix --cache",
-    "start": "node src",
-    "dev": "nodemon --config"
+    "dev": "nodemon --config",
+    "start": "node src"
   },
   "nodemonConfig": {
     "ext": ".js,.env",
@@ -16,9 +28,6 @@
     "verbose": false,
     "exec": "node src"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
@@ -34,6 +43,6 @@
     "prettier": "^2.3.2"
   },
   "engines": {
-    "node": ">=14"
+    "node": ">=14.18.2"
   }
 }

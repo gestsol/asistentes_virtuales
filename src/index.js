@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const dotenv = require('dotenv')
 const { Server } = require('./services/Server.service')
 
-dotenv.config({ path: './.env' })
+dotenv.config()
 
 const { DB_URI, PORT } = process.env
 
@@ -15,7 +15,7 @@ mongoose
     const port = PORT || 3000
 
     Server.listen(port, () => {
-      console.log(`API -> listening on port ${port}`)
+      console.log(`API -> listening on http://localhost:${port}`)
     })
   })
 
